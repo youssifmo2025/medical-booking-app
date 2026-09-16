@@ -50,6 +50,7 @@ Follow these steps to run the project locally:
 
 - **Global State Management:** Extracted API fetching logic and shared data into robust `Zustand` stores (`useDoctorStore` and `useAppointmentStore`).
 - **Dark / Light Theme Toggle:** A persistent theme switcher in the Navbar (🌙 / ☀️). Respects the user's system preference on first visit and saves the choice to `localStorage`.
+- **Debounced Search:** The doctor search input uses a custom `useDebounce` hook (350ms delay) to avoid filtering on every keystroke, improving performance.
 - **Reusable UI Components:** Cleanly extracted duplicated UI elements into shared components (e.g., `SkeletonCard`, `StatusBadge`, `EmptyState`).
 - **Responsive Design:** Fluid layouts built with Tailwind CSS that adapt beautifully across mobile (375px), tablet (768px), and desktop (1280px) screens.
 - **Graceful Error Handling & Fallbacks:** Displays user-friendly `EmptyState` views if the API server is down or searches yield no results, rather than crashing.

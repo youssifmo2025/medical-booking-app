@@ -3,6 +3,7 @@ import useDoctorStore from '@/store/useDoctorStore';
 import DoctorCard from '@/components/DoctorCard';
 import SkeletonCard from '@/components/SkeletonCard';
 import EmptyState from '@/components/EmptyState';
+import useDebounce from '@/hooks/useDebounce';
 
 // ── Main page ─────────────────────────────────────────────────
 const DoctorsPage = () => {
@@ -11,6 +12,9 @@ const DoctorsPage = () => {
   // Filter state
   const [search, setSearch] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
+
+  // ── Debounced search — only re-filters 350 ms after user stops typing ──
+  const debouncedSearch = useDebounce(search, 350);
 
   useEffect(() => {
     fetchDoctors();
@@ -21,7 +25,7 @@ const DoctorsPage = () => {
 
   // ── Derived: filtered list (AND logic) ───────────────────
   const filtered = doctors.filter((d) => {
-    const matchesName = d.name.toLowerCase().includes(search.toLowerCase());
+    const matchesName = d.name.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchesSpecialty = selectedSpecialty ? d.specialty === selectedSpecialty : true;
     return matchesName && matchesSpecialty;
   });
