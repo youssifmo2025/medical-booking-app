@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getAppointments } from '@/services/api';
 
 const DEFAULT_PROFILE = {
@@ -22,6 +22,18 @@ const ProfilePage = () => {
   const [formData, setFormData] = useState(profile);
   const [stats, setStats] = useState({ total: 0, confirmed: 0, pending: 0 });
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
+
+  // ── Uncontrolled input — we read its value on submit, not on every keystroke ──
+  const noteRef = useRef(null);
+
+  const handleSaveNote = () => {
+    const note = noteRef.current?.value?.trim();
+    if (!note) return;
+    localStorage.setItem('profile_note', note);
+    setNoteSaved(true);
+    setTimeout(() => setNoteSaved(false), 3000);
+  };
 
   useEffect(() => {
     // Fetch stats from appointments
@@ -296,6 +308,40 @@ const ProfilePage = () => {
           </div>
         </div>
       )}
+
+      {/* ── Quick Note — uncontrolled input via useRef ─────────── */}
+      <div className='bg-card border border-border rounded-2xl p-6 flex flex-col gap-4'>
+        <div>
+          <h2 className='text-base font-bold text-foreground'>Quick Note</h2>
+          <p className='text-xs text-muted-foreground mt-0.5'>
+            Jot down a personal reminder (e.g. medications, upcoming tests). Saved locally on your browser.
+          </p>
+        </div>
+
+        {noteSaved && (
+          <div className='bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 p-3 rounded-xl text-sm font-medium'>
+            ✅ Note saved!
+          </div>
+        )}
+
+        <textarea
+          ref={noteRef}
+          id='profile-quick-note'
+          defaultValue={localStorage.getItem('profile_note') || ''}
+          rows={3}
+          placeholder='Type your note here…'
+          className='bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition resize-none'
+        />
+
+        <div className='flex justify-end'>
+          <button
+            onClick={handleSaveNote}
+            className='bg-primary text-primary-foreground font-semibold px-5 py-2 rounded-xl text-sm hover:opacity-90 transition shadow-sm'
+          >
+            Save Note
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
