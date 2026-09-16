@@ -1,21 +1,59 @@
+# Medical Booking App
 
-# React + Vite
+A modern, responsive React frontend application for browsing doctors and booking medical appointments. Built as an individual training project for ITI Fayoum.
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+## Tech Stack
 
-Currently, two official plugins are available:
+This project is built using modern web development tools:
+- **Core:** React 19, React Router 8
+- **State Management:** Zustand
+- **Form Handling & Validation:** React Hook Form, Zod
+- **API Client:** Axios
+- **Mock Backend:** json-server
+- **Styling:** Tailwind CSS (v4) with predefined UI tokens
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Setup Instructions
 
-## React Compiler
+Follow these steps to run the project locally:
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
+2. **Start the local backend server:**
+   In one terminal, start the `json-server` which will run on port 3001:
+   ```bash
+   npm run server
+   ```
 
-## Expanding the Oxlint configuration
+3. **Start the Vite development server:**
+   In a separate terminal, start the frontend app:
+   ```bash
+   npm run dev
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Local Environment
 
+- **API Base URL:** `http://localhost:3001`
+- The `src/services/api.js` is configured to read the API URL from `.env` using `import.meta.env.VITE_API_BASE_URL`, falling back to `http://localhost:3001`.
+
+## Implemented Core Features
+
+- **Doctors Listing:** Search doctors by name and filter by specialty.
+- **Doctor Details:** View full doctor information including consultation fees, experience, and available slots.
+- **Book Appointment:** Integrated booking form with strict Zod validation. Prevents double-booking existing time slots.
+- **Appointments Management:** Full CRUD capabilities for appointments (View all, Cancel, Delete, and inline Edit/Reschedule).
+- **Profile:** Manage personal and medical details with persistent local storage.
+
+## Bonus Features Actually Implemented
+
+- **Global State Management:** Extracted API fetching logic and shared data into robust `Zustand` stores (`useDoctorStore` and `useAppointmentStore`).
+- **Reusable UI Components:** Cleanly extracted duplicated UI elements into shared components (e.g., `SkeletonCard`, `StatusBadge`, `EmptyState`).
+- **Responsive Design:** Fluid layouts built with Tailwind CSS that adapt beautifully across mobile (375px), tablet (768px), and desktop (1280px) screens.
+- **Graceful Error Handling & Fallbacks:** Displays user-friendly `EmptyState` views if the API server is down or searches yield no results, rather than crashing.
+- **Custom 404 Page:** Catches all undefined routes and elegantly redirects users back to safety.
+
+## Screenshots
+
+Screenshots available in `/screenshots`
