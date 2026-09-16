@@ -1,13 +1,9 @@
+import { RouterProvider } from 'react-router';
+import router from '@/routes/router';
 import './App.css';
 
 const App = () => {
-  return (
-    <div className='flex items-center justify-center min-h-screen'>
-      <h1 className='text-primary text-3xl font-bold'>
-        Medical Booking App — Setup Complete ✓
-      </h1>
-    </div>
-  );
+  return <RouterProvider router={router} />;
 };
 
 export default App;
