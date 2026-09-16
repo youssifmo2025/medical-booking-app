@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import useFavoritesStore from '@/store/useFavoritesStore';
 
 const DoctorCard = ({ doctor }) => {
   const {
@@ -14,6 +15,9 @@ const DoctorCard = ({ doctor }) => {
     avatar,
     available,
   } = doctor;
+
+  const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const favorited = isFavorite(id);
 
   // Fallback if avatar URL fails to load
   const handleImgError = (e) => {
@@ -50,6 +54,23 @@ const DoctorCard = ({ doctor }) => {
             </span>
           </div>
         )}
+
+        {/* ── Favorite button ── */}
+        <button
+          onClick={(e) => {
+            e.preventDefault(); // don't navigate to details
+            e.stopPropagation();
+            toggleFavorite(id);
+          }}
+          title={favorited ? 'Remove from favorites' : 'Add to favorites'}
+          className={`absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full backdrop-blur-sm border transition-all duration-200 ${
+            favorited
+              ? 'bg-rose-500 border-rose-400 text-white scale-110'
+              : 'bg-background/70 border-border text-muted-foreground hover:bg-rose-50 hover:border-rose-300 hover:text-rose-500'
+          }`}
+        >
+          {favorited ? '❤️' : '🤍'}
+        </button>
       </div>
 
       {/* Card body */}
@@ -93,3 +114,4 @@ const DoctorCard = ({ doctor }) => {
 };
 
 export default DoctorCard;
+

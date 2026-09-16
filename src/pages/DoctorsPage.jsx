@@ -4,6 +4,7 @@ import DoctorCard from '@/components/DoctorCard';
 import SkeletonCard from '@/components/SkeletonCard';
 import EmptyState from '@/components/EmptyState';
 import useDebounce from '@/hooks/useDebounce';
+import useFavoritesStore from '@/store/useFavoritesStore';
 
 // ── Main page ─────────────────────────────────────────────────
 const DoctorsPage = () => {
@@ -12,6 +13,8 @@ const DoctorsPage = () => {
   // Filter state
   const [search, setSearch] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const { isFavorite } = useFavoritesStore();
 
   // ── Debounced search — only re-filters 350 ms after user stops typing ──
   const debouncedSearch = useDebounce(search, 350);
@@ -27,7 +30,8 @@ const DoctorsPage = () => {
   const filtered = doctors.filter((d) => {
     const matchesName = d.name.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchesSpecialty = selectedSpecialty ? d.specialty === selectedSpecialty : true;
-    return matchesName && matchesSpecialty;
+    const matchesFavorites = showFavoritesOnly ? isFavorite(d.id) : true;
+    return matchesName && matchesSpecialty && matchesFavorites;
   });
 
   // ── Render ────────────────────────────────────────────────
@@ -62,6 +66,16 @@ const DoctorsPage = () => {
             </option>
           ))}
         </select>
+        <button
+          onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors flex items-center gap-2 ${
+            showFavoritesOnly
+              ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/30 dark:text-rose-400'
+              : 'bg-card text-muted-foreground border-border hover:bg-secondary'
+          }`}
+        >
+          {showFavoritesOnly ? '❤️ Favorites' : '🤍 Favorites'}
+        </button>
       </div>
 
       {/* ── Loading state ── */}
