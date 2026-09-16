@@ -18,6 +18,4 @@ You can also try [the experimental native React Compiler support in plugin-react
 ## Expanding the Oxlint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
-=======
-# medical-booking-app
->>>>>>> cae713c6361b9f6e6d22bb19da5abd85b8f70fea
+
