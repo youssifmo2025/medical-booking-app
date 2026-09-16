@@ -3,7 +3,8 @@ import { useSearchParams, useNavigate, Link } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { getDoctors, createAppointment } from '@/services/api';
+import useDoctorStore from '@/store/useDoctorStore';
+import useAppointmentStore from '@/store/useAppointmentStore';
 
 // ── Zod Validation Schema ──────────────────────────────────────
 const appointmentSchema = z.object({
@@ -23,8 +24,9 @@ const BookAppointmentPage = () => {
 
   const doctorIdParam = searchParams.get('doctorId');
 
-  const [doctors, setDoctors] = useState([]);
-  const [loadingDoctors, setLoadingDoctors] = useState(true);
+  const { doctors, loading: loadingDoctors, fetchDoctors } = useDoctorStore();
+  const { createAppointment } = useAppointmentStore();
+  
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
@@ -53,33 +55,23 @@ const BookAppointmentPage = () => {
 
   // Fetch doctors on mount
   useEffect(() => {
-    const fetchDoctorsList = async () => {
-      try {
-        setLoadingDoctors(true);
-        const res = await getDoctors();
-        // Only allow booking available doctors
-        const availableDocs = res.data.filter((d) => d.available);
-        setDoctors(availableDocs);
+    fetchDoctors();
+  }, [fetchDoctors]);
 
-        // If doctorId searchParam is provided, set it in form
-        if (doctorIdParam) {
-          const matchedDoc = availableDocs.find((d) => d.id === Number(doctorIdParam));
-          if (matchedDoc) {
-            setValue('doctorId', matchedDoc.id);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to load doctors', err);
-      } finally {
-        setLoadingDoctors(false);
+  const availableDocs = doctors.filter((d) => d.available);
+
+  // If doctorId searchParam is provided, set it in form once doctors are loaded
+  useEffect(() => {
+    if (doctorIdParam && availableDocs.length > 0) {
+      const matchedDoc = availableDocs.find((d) => d.id === Number(doctorIdParam));
+      if (matchedDoc) {
+        setValue('doctorId', matchedDoc.id);
       }
-    };
-
-    fetchDoctorsList();
-  }, [doctorIdParam, setValue]);
+    }
+  }, [doctorIdParam, availableDocs.length, setValue]); // use length to avoid infinite loops if ref changes
 
   // Selected doctor object for displaying slots/info
-  const selectedDoctor = doctors.find((d) => d.id === Number(selectedDoctorId));
+  const selectedDoctor = availableDocs.find((d) => d.id === Number(selectedDoctorId));
 
   const onSubmit = async (data) => {
     try {
@@ -146,7 +138,7 @@ const BookAppointmentPage = () => {
               className='bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition disabled:opacity-50'
             >
               <option value=''>-- Select a Doctor --</option>
-              {doctors.map((doc) => (
+              {availableDocs.map((doc) => (
                 <option key={doc.id} value={doc.id}>
                   {doc.name} ({doc.specialty}) — {doc.consultationFee} EGP
                 </option>

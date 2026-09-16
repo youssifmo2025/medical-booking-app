@@ -1,13 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation, Link } from 'react-router';
-import { getAppointments, getDoctors, updateAppointment, deleteAppointment } from '@/services/api';
+import useAppointmentStore from '@/store/useAppointmentStore';
+import useDoctorStore from '@/store/useDoctorStore';
+import StatusBadge from '@/components/StatusBadge';
+import EmptyState from '@/components/EmptyState';
 
 const AppointmentsPage = () => {
   const location = useLocation();
-  const [appointments, setAppointments] = useState([]);
-  const [doctorsMap, setDoctorsMap] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { appointments, loading: loadingApps, error: errorApps, fetchAppointments, updateAppointment, deleteAppointment } = useAppointmentStore();
+  const { doctors, loading: loadingDocs, error: errorDocs, fetchDoctors } = useDoctorStore();
+
+  const loading = loadingApps || loadingDocs;
+  const error = errorApps || errorDocs;
+
   const [statusFilter, setStatusFilter] = useState('all');
   const [showSuccessBanner, setShowSuccessBanner] = useState(
     Boolean(location.state?.bookingSuccess)
@@ -18,41 +23,25 @@ const AppointmentsPage = () => {
   const [editTime, setEditTime] = useState('');
   const [savingAppId, setSavingAppId] = useState(null);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const [appRes, docRes] = await Promise.all([getAppointments(), getDoctors()]);
-
-      // Create doc ID -> doc object map
-      const docMap = {};
-      docRes.data.forEach((d) => {
-        docMap[d.id] = d;
-      });
-      setDoctorsMap(docMap);
-      setAppointments(appRes.data);
-    } catch (err) {
-      console.error(err);
-      setError(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchAppointments();
+    fetchDoctors();
+  }, [fetchAppointments, fetchDoctors]);
+
+  const doctorsMap = useMemo(() => {
+    const map = {};
+    doctors.forEach((d) => {
+      map[d.id] = d;
+    });
+    return map;
+  }, [doctors]);
 
   const handleCancelAppointment = async (id) => {
     if (!window.confirm('Are you sure you want to cancel this appointment?')) return;
 
     try {
       await updateAppointment(id, { status: 'cancelled' });
-      setAppointments((prev) =>
-        prev.map((app) => (app.id === id ? { ...app, status: 'cancelled' } : app))
-      );
     } catch (err) {
-      console.error('Failed to cancel appointment', err);
       alert('Could not cancel appointment. Please try again.');
     }
   };
@@ -62,9 +51,7 @@ const AppointmentsPage = () => {
 
     try {
       await deleteAppointment(id);
-      setAppointments((prev) => prev.filter((app) => app.id !== id));
     } catch (err) {
-      console.error('Failed to delete appointment', err);
       alert('Could not delete appointment. Please try again.');
     }
   };
@@ -87,14 +74,9 @@ const AppointmentsPage = () => {
     try {
       setSavingAppId(app.id);
       await updateAppointment(app.id, { ...app, date: editDate, time: editTime });
-      
-      setAppointments((prev) =>
-        prev.map((a) => (a.id === app.id ? { ...a, date: editDate, time: editTime } : a))
-      );
       setEditingAppId(null);
       alert('Appointment rescheduled successfully!');
     } catch (err) {
-      console.error('Failed to reschedule appointment', err);
       alert('Could not reschedule appointment. Please try again.');
     } finally {
       setSavingAppId(null);
@@ -107,39 +89,7 @@ const AppointmentsPage = () => {
     return app.status?.toLowerCase() === statusFilter;
   });
 
-  const getStatusBadge = (status) => {
-    const s = status?.toLowerCase();
-    switch (s) {
-      case 'confirmed':
-        ariaLabel: 'Confirmed';
-        return (
-          <span className='inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-emerald-500/20'>
-            <span className='w-1.5 h-1.5 rounded-full bg-emerald-500' />
-            Confirmed
-          </span>
-        );
-      case 'pending':
-        return (
-          <span className='inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-amber-500/20'>
-            <span className='w-1.5 h-1.5 rounded-full bg-amber-500' />
-            Pending
-          </span>
-        );
-      case 'cancelled':
-        return (
-          <span className='inline-flex items-center gap-1.5 bg-destructive/10 text-destructive text-xs font-semibold px-2.5 py-1 rounded-full border border-destructive/20'>
-            <span className='w-1.5 h-1.5 rounded-full bg-destructive' />
-            Cancelled
-          </span>
-        );
-      default:
-        return (
-          <span className='inline-flex items-center gap-1.5 bg-muted text-muted-foreground text-xs font-semibold px-2.5 py-1 rounded-full'>
-            {status}
-          </span>
-        );
-    }
-  };
+
 
   return (
     <div className='max-w-4xl mx-auto flex flex-col gap-6'>
@@ -206,36 +156,41 @@ const AppointmentsPage = () => {
 
       {/* Error state */}
       {!loading && error && (
-        <div className='py-16 flex flex-col items-center justify-center gap-3 text-center'>
-          <span className='text-5xl'>⚠️</span>
-          <p className='text-lg font-semibold text-foreground'>Failed to load appointments</p>
-          <p className='text-sm text-muted-foreground'>Please make sure json-server is running.</p>
-          <button
-            onClick={fetchData}
-            className='bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90'
-          >
-            Retry
-          </button>
-        </div>
+        <EmptyState
+          icon='⚠️'
+          title='Failed to load appointments'
+          description='Please make sure json-server is running.'
+          action={
+            <button
+              onClick={() => {
+                fetchAppointments();
+                fetchDoctors();
+              }}
+              className='bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90'
+            >
+              Retry
+            </button>
+          }
+        />
       )}
 
       {/* Empty State */}
       {!loading && !error && filteredAppointments.length === 0 && (
-        <div className='bg-card border border-border rounded-2xl py-16 px-6 text-center flex flex-col items-center justify-center gap-3'>
-          <span className='text-5xl'>📅</span>
-          <h2 className='text-lg font-bold text-foreground'>No Appointments Found</h2>
-          <p className='text-sm text-muted-foreground max-w-sm'>
-            {statusFilter === 'all'
-              ? "You haven't scheduled any appointments yet."
-              : `No appointments with status "${statusFilter}".`}
-          </p>
-          <Link
-            to='/appointments/new'
-            className='mt-2 bg-primary text-primary-foreground text-xs font-semibold px-4 py-2 rounded-lg hover:opacity-90'
-          >
-            Book an Appointment
-          </Link>
-        </div>
+        <EmptyState
+          icon='📅'
+          title='No Appointments Found'
+          description={statusFilter === 'all'
+            ? "You haven't scheduled any appointments yet."
+            : `No appointments with status "${statusFilter}".`}
+          action={
+            <Link
+              to='/appointments/new'
+              className='mt-2 bg-primary text-primary-foreground text-xs font-semibold px-4 py-2 rounded-lg hover:opacity-90 inline-block'
+            >
+              Book an Appointment
+            </Link>
+          }
+        />
       )}
 
       {/* Appointments List */}
@@ -276,7 +231,7 @@ const AppointmentsPage = () => {
                             {doctor.specialty}
                           </span>
                         )}
-                        {getStatusBadge(app.status)}
+                        <StatusBadge status={app.status} />
                       </div>
   
                       {/* Patient & Reason */}
