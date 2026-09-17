@@ -159,7 +159,7 @@ const AppointmentsPage = () => {
         <EmptyState
           icon='⚠️'
           title='Failed to load appointments'
-          description='Please make sure json-server is running.'
+          description={typeof error === 'string' ? error : 'Please check your connection and try again.'}
           action={
             <button
               onClick={() => {

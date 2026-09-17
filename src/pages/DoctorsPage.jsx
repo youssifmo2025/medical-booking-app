@@ -104,7 +104,7 @@ const DoctorsPage = () => {
         <EmptyState
           icon='⚠️'
           title='Failed to load doctors'
-          description='Make sure json-server is running on port 3001.'
+          description={typeof error === 'string' ? error : 'Please check your connection and try again.'}
           action={
             <button
               onClick={fetchDoctors}
