@@ -40,7 +40,7 @@ const AppointmentsPage = () => {
     if (!window.confirm('Are you sure you want to cancel this appointment?')) return;
 
     try {
-      await updateAppointment(id, { status: 'cancelled' });
+      await updateAppointment(id, { ...app, status: 'cancelled' });
     } catch (err) {
       alert('Could not cancel appointment. Please try again.');
     }
