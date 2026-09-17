@@ -57,6 +57,4 @@ Follow these steps to run the project locally:
 - **Graceful Error Handling & Fallbacks:** Displays user-friendly `EmptyState` views if the API server is down or searches yield no results, rather than crashing.
 - **Custom 404 Page:** Catches all undefined routes and elegantly redirects users back to safety.
 
-## Screenshots
 
-Screenshots available in `/screenshots`
