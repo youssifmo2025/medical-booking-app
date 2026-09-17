@@ -14,6 +14,7 @@ const DoctorsPage = () => {
   const [search, setSearch] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const { isFavorite } = useFavoritesStore();
 
   // ── Debounced search — only re-filters 350 ms after user stops typing ──
@@ -33,6 +34,17 @@ const DoctorsPage = () => {
     const matchesFavorites = showFavoritesOnly ? isFavorite(d.id) : true;
     return matchesName && matchesSpecialty && matchesFavorites;
   });
+
+  // Reset to page 1 if any filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, selectedSpecialty, showFavoritesOnly]);
+
+  // Pagination logic
+  const ITEMS_PER_PAGE = 6;
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedDoctors = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   // ── Render ────────────────────────────────────────────────
   return (
@@ -123,11 +135,36 @@ const DoctorsPage = () => {
               }
             />
           ) : (
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
-              {filtered.map((doctor) => (
-                <DoctorCard key={doctor.id} doctor={doctor} />
-              ))}
-            </div>
+            <>
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
+                {paginatedDoctors.map((doctor) => (
+                  <DoctorCard key={doctor.id} doctor={doctor} />
+                ))}
+              </div>
+              
+              {/* ── Pagination Controls ── */}
+              {totalPages > 1 && (
+                <div className='flex justify-center items-center gap-4 mt-8'>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className='px-4 py-2 bg-card border border-border text-foreground rounded-lg disabled:opacity-50 transition-opacity hover:bg-secondary disabled:hover:bg-card text-sm font-medium'
+                  >
+                    Previous
+                  </button>
+                  <span className='text-sm text-muted-foreground font-medium'>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className='px-4 py-2 bg-card border border-border text-foreground rounded-lg disabled:opacity-50 transition-opacity hover:bg-secondary disabled:hover:bg-card text-sm font-medium'
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </>
       )}
