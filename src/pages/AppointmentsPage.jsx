@@ -36,11 +36,11 @@ const AppointmentsPage = () => {
     return map;
   }, [doctors]);
 
-  const handleCancelAppointment = async (id) => {
+  const handleCancelAppointment = async (app) => {
     if (!window.confirm('Are you sure you want to cancel this appointment?')) return;
 
     try {
-      await updateAppointment(id, { ...app, status: 'cancelled' });
+      await updateAppointment(app.id, { ...app, status: 'cancelled' });
     } catch (err) {
       alert('Could not cancel appointment. Please try again.');
     }
@@ -274,7 +274,7 @@ const AppointmentsPage = () => {
                           Edit / Reschedule
                         </button>
                         <button
-                          onClick={() => handleCancelAppointment(app.id)}
+                          onClick={() => handleCancelAppointment(app)}
                           className='text-xs font-semibold text-destructive hover:bg-destructive/10 px-3 py-1.5 rounded-lg transition border border-destructive/20'
                         >
                           Cancel Appointment
