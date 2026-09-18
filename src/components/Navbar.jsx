@@ -23,6 +23,11 @@ const Navbar = () => {
           <ul className='flex items-center gap-6 list-none m-0 p-0'>
             <li>
               <NavLink to='/' end className={linkClass}>
+                Home
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to='/doctors' className={linkClass}>
                 Doctors
               </NavLink>
             </li>

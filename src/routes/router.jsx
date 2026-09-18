@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router';
 import { lazy, Suspense } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 
+const HomePage = lazy(() => import('@/pages/HomePage'));
 const DoctorsPage = lazy(() => import('@/pages/DoctorsPage'));
 const DoctorDetailsPage = lazy(() => import('@/pages/DoctorDetailsPage'));
 const AppointmentsPage = lazy(() => import('@/pages/AppointmentsPage'));
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
+        element: withSuspense(HomePage),
+      },
+      {
+        path: 'doctors',
         element: withSuspense(DoctorsPage),
       },
       {
