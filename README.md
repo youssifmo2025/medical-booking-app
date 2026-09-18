@@ -21,22 +21,29 @@ Follow these steps to run the project locally:
    npm install
    ```
 
-2. **Start the local backend server:**
-   In one terminal, start the `json-server` which will run on port 3001:
+2. **Configure environment variables:**
+   Create a `.env` file from `.env.example` and set your credentials:
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Start the backend server (if using local json-server):**
+   In one terminal, start `json-server` (port 3001):
    ```bash
    npm run server
    ```
 
-3. **Start the Vite development server:**
+4. **Start the Vite development server:**
    In a separate terminal, start the frontend app:
    ```bash
    npm run dev
    ```
 
-## Local Environment
+## Environment Configuration
 
-- **API Base URL:** `http://localhost:3001`
-- The `src/services/api.js` is configured to read the API URL from `.env` using `import.meta.env.VITE_API_BASE_URL`, falling back to `http://localhost:3001`.
+- `VITE_SUPABASE_URL`: Supabase project URL (e.g. `https://your-project.supabase.co`)
+- `VITE_SUPABASE_ANON_KEY`: Supabase anonymous API key
+- `VITE_API_BASE_URL`: Mock server URL (`http://localhost:3001`)
 
 ## Implemented Core Features
 
