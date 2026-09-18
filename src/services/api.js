@@ -1,62 +1,50 @@
-import { supabase } from '../lib/supabase';
+import axiosClient from './axiosClient';
 
 // ── Doctors ──────────────────────────────────────────────────
 export const getDoctors = async () => {
-  const { data, error } = await supabase.from('doctors').select('*');
-  if (error) throw error;
-  return { data };
+  const response = await axiosClient.get('/doctors?select=*');
+  return { data: response.data };
 };
 
 export const getDoctorById = async (id) => {
-  const { data, error } = await supabase
-    .from('doctors')
-    .select('*')
-    .eq('id', id)
-    .single();
-  if (error) throw error;
+  const response = await axiosClient.get(`/doctors?id=eq.${id}&select=*`, {
+    headers: { Accept: 'application/vnd.pgrst.object+json' },
+  });
+  const data = Array.isArray(response.data) ? response.data[0] : response.data;
   return { data };
 };
 
 // ── Appointments ──────────────────────────────────────────────
 export const getAppointments = async () => {
-  const { data, error } = await supabase.from('appointments').select('*');
-  if (error) throw error;
-  return { data };
+  const response = await axiosClient.get('/appointments?select=*');
+  return { data: response.data };
 };
 
 export const getAppointmentById = async (id) => {
-  const { data, error } = await supabase
-    .from('appointments')
-    .select('*')
-    .eq('id', id)
-    .single();
-  if (error) throw error;
+  const response = await axiosClient.get(`/appointments?id=eq.${id}&select=*`, {
+    headers: { Accept: 'application/vnd.pgrst.object+json' },
+  });
+  const data = Array.isArray(response.data) ? response.data[0] : response.data;
   return { data };
 };
 
 export const createAppointment = async (payload) => {
-  const { data, error } = await supabase
-    .from('appointments')
-    .insert(payload)
-    .select()
-    .single();
-  if (error) throw error;
+  const response = await axiosClient.post('/appointments', payload, {
+    headers: { Accept: 'application/vnd.pgrst.object+json' },
+  });
+  const data = Array.isArray(response.data) ? response.data[0] : response.data;
   return { data };
 };
 
 export const updateAppointment = async (id, payload) => {
-  const { data, error } = await supabase
-    .from('appointments')
-    .update(payload)
-    .eq('id', id)
-    .select()
-    .single();
-  if (error) throw error;
+  const response = await axiosClient.patch(`/appointments?id=eq.${id}`, payload, {
+    headers: { Accept: 'application/vnd.pgrst.object+json' },
+  });
+  const data = Array.isArray(response.data) ? response.data[0] : response.data;
   return { data };
 };
 
 export const deleteAppointment = async (id) => {
-  const { error } = await supabase.from('appointments').delete().eq('id', id);
-  if (error) throw error;
+  await axiosClient.delete(`/appointments?id=eq.${id}`);
   return { data: { id } };
 };
