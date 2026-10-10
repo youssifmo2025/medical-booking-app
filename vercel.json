@@ -1,5 +1,0 @@
-{
-  "buildCommand": "cd proj-submission && npm install && npm run build",
-  "outputDirectory": "proj-submission/dist",
-  "installCommand": "echo skip"
-}
